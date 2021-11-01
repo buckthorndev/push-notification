@@ -4,7 +4,11 @@ import { initializeApp, applicationDefault } from "firebase-admin/app";
 import { getMessaging } from "firebase-admin/messaging";
 
 const prisma = new PrismaClient();
+const app = initializeApp({
+  credential: applicationDefault(),
+});
 
+const message = getMessaging(app);
 export const pushController = {
   getAllPush: async (req: Request, res: Response) => {
     const tokens = await prisma.user.findMany();
@@ -39,12 +43,6 @@ export const pushController = {
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
-
-    const app = initializeApp({
-      credential: applicationDefault(),
-    });
-
-    const message = getMessaging(app);
     message
       .sendToDevice(user.token, {
         notification: {
@@ -52,10 +50,10 @@ export const pushController = {
           body,
         },
       })
-      .then(function (_) {
-        return res.send({message: "Push notification sent"});
+      .then(function(_) {
+        return res.send({ message: "Push notification sent" });
       })
-      .catch(function (error) {
+      .catch(function(error) {
         console.log(error);
         return res.status(500).send({ message: "Something went wrong" });
       });
